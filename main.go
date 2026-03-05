@@ -14,8 +14,14 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
+
 		input = strings.TrimSpace(input)
-		parser(input)
+		if len(input) == 0 {
+			continue
+		}
+		command, args := parser(input)
+		fmt.Println(command)
+		fmt.Println(args)
 
 	}
 }
