@@ -20,8 +20,7 @@ func main() {
 			continue
 		}
 		command, args := parser(input)
-		fmt.Println(command)
-		fmt.Println(args)
+		execute(command, args)
 
 	}
 }

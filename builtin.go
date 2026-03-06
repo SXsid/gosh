@@ -4,13 +4,16 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 )
 
-type commandHandler func(args []string)
+type commandHandler func(args []Token)
 
 var BuilteinCommands = map[string]commandHandler{
 	"pwd":  pwdHandler,
+	"type": typeHandler,
 	"exit": exitHandler,
+	"echo": exitHandler,
 }
 
 func isBuiltin(command string) bool {
@@ -19,11 +22,11 @@ func isBuiltin(command string) bool {
 	return ok
 }
 
-func execBuiltin(command string, args []string) {
+func execBuiltin(command string, args []Token) {
 	BuilteinCommands[command](args)
 }
 
-func pwdHandler(args []string) {
+func pwdHandler(args []Token) {
 	dir, err := os.Getwd()
 	if err != nil {
 		fmt.Fprint(os.Stderr, err)
@@ -31,17 +34,17 @@ func pwdHandler(args []string) {
 	fmt.Println(dir)
 }
 
-func exitHandler(args []string) {
+func exitHandler(args []Token) {
 	os.Exit(0)
 }
 
-func typeHandler(args []string) {
+func typeHandler(args []Token) {
 	for _, arg := range args {
-		ok := isBuiltin(arg)
+		ok := isBuiltin(arg.value)
 		if ok {
 			fmt.Printf("%s is a shell builtin\n", arg)
 		} else {
-			value, err := exec.LookPath(arg)
+			value, err := exec.LookPath(arg.value)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "%s: not found\n", arg)
 			} else {
@@ -52,4 +55,5 @@ func typeHandler(args []string) {
 }
 
 func echoHandler(args []string) {
+	fmt.Print(strings.Join(args, " "))
 }
