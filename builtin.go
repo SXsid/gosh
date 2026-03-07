@@ -9,11 +9,15 @@ import (
 
 type commandHandler func(args []Token)
 
-var BuilteinCommands = map[string]commandHandler{
-	"pwd":  pwdHandler,
-	"type": typeHandler,
-	"exit": exitHandler,
-	"echo": exitHandler,
+var BuilteinCommands map[string]commandHandler
+
+func Init() {
+	BuilteinCommands = map[string]commandHandler{
+		"pwd":  pwdHandler,
+		"type": typeHandler,
+		"exit": exitHandler,
+		"echo": echoHandler,
+	}
 }
 
 func isBuiltin(command string) bool {
@@ -42,18 +46,25 @@ func typeHandler(args []Token) {
 	for _, arg := range args {
 		ok := isBuiltin(arg.value)
 		if ok {
-			fmt.Printf("%s is a shell builtin\n", arg)
+			fmt.Printf("%s is a shell builtin\n", arg.value)
 		} else {
 			value, err := exec.LookPath(arg.value)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "%s: not found\n", arg)
+				fmt.Fprintf(os.Stderr, "%s: not found\n", arg.value)
 			} else {
-				fmt.Printf("%s is %s\n", arg, value)
+				fmt.Printf("%s is %s\n", arg.value, value)
 			}
 		}
 	}
 }
 
-func echoHandler(args []string) {
-	fmt.Print(strings.Join(args, " "))
+func echoHandler(args []Token) {
+	valueArray := make([]string, len(args))
+	if len(valueArray) == 0 {
+		return
+	}
+	for i, data := range args {
+		valueArray[i] = data.value
+	}
+	fmt.Println(strings.Join(valueArray, " "))
 }

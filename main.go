@@ -8,11 +8,14 @@ import (
 )
 
 func main() {
+	Init()
+	reader := bufio.NewReader(os.Stdin)
 	for {
 		fmt.Print("$ ")
-		input, err := bufio.NewReader(os.Stdin).ReadString('\n')
+		input, err := reader.ReadString('\n')
 		if err != nil {
-			panic(err)
+			fmt.Println("no data found ")
+			os.Exit(0)
 		}
 
 		input = strings.TrimSpace(input)

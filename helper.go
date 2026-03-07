@@ -53,8 +53,8 @@ func parser(input string) (string, []Token) {
 				Type:  pipe,
 				value: string(curr),
 			})
-
 		default:
+
 			if unicode.IsLetter(curr) || unicode.IsDigit(curr) {
 				j := i
 				for j < len(input) && !unicode.IsSpace(rune(input[j])) {
@@ -74,7 +74,7 @@ func parser(input string) (string, []Token) {
 		i++
 
 	}
-	if len(data) > 2 {
+	if len(data) >= 2 {
 		args = data[1:]
 	}
 	return data[0].value, args
@@ -92,7 +92,7 @@ func execute(command string, args []Token) {
 		cmd := exec.Command(command, tokenValue...)
 		output, err := cmd.CombinedOutput()
 		if err != nil {
-			fmt.Println("%s ivalid command", command)
+			fmt.Printf("%s ivalid command\n", command)
 		} else {
 			fmt.Println(string(output))
 		}
