@@ -16,6 +16,7 @@ func Init() {
 		"pwd":  pwdHandler,
 		"type": typeHandler,
 		"exit": exitHandler,
+		"cd":   cdHandler,
 		"echo": echoHandler,
 	}
 }
@@ -67,4 +68,21 @@ func echoHandler(args []Token) {
 		valueArray[i] = data.value
 	}
 	fmt.Println(strings.Join(valueArray, " "))
+}
+
+// TODO: implement cd command
+func cdHandler(args []Token) {
+	path := args[0].value
+	if len(path) <= 0 {
+		return
+	}
+	switch path[0] {
+	case '~':
+	case '/':
+		if err := os.Chdir(path); err != nil {
+			fmt.Println(err.Error())
+		}
+	default:
+
+	}
 }

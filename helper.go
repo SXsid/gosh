@@ -13,6 +13,7 @@ const (
 	word  TokenType = "WORD"
 	quote TokenType = "QUOTE"
 	pipe  TokenType = "PIPE"
+	path  TokenType = "PATH"
 )
 
 type Token struct {
@@ -20,11 +21,25 @@ type Token struct {
 	value string
 }
 
-// parser the input string into command line and argument and refien those
+func extract_word(input string, i int, char rune) (string, int, error) {
+	j := i + 1
+	for len(input) > j && rune(input[j]) != char {
+		j++
+	}
+	if len(input) > j {
+		j++
+	} else if rune(input[j-1]) != char {
+		return "", i, fmt.Errorf("incoorect syntax %c^", rune(input[j-1]))
+	}
+
+	return input[i:j], j, nil
+}
+
 func parser(input string) (string, []Token) {
 	i := 0
 	data := make([]Token, 0)
 	args := make([]Token, 0)
+loop:
 	for i < len(input) {
 
 		curr := rune(input[i])
@@ -35,24 +50,48 @@ func parser(input string) (string, []Token) {
 		}
 		switch curr {
 		case '"':
-			j := i + 1
-			for rune(input[j]) != '"' {
-				if len(input) <= j {
-					fmt.Fprint(os.Stderr, "inccorec sytax")
-					os.Exit(1)
-				}
-				j++
+			value, j, err := extract_word(input, i, '"')
+			if err != nil {
+				fmt.Println(err.Error())
+
+				break loop
 			}
 			data = append(data, Token{
 				Type:  quote,
-				value: input[i : j+1],
+				value: value,
 			})
 			i = j
+
+		case '\'':
+
+			value, j, err := extract_word(input, i, '\'')
+			if err != nil {
+				fmt.Println(err.Error())
+
+				break loop
+			}
+			data = append(data, Token{
+				Type:  quote,
+				value: value,
+			})
+			i = j
+
 		case '|':
 			data = append(data, Token{
 				Type:  pipe,
 				value: string(curr),
 			})
+		case '/':
+			j := i + 1
+			for j < len(input) && !unicode.IsSpace(rune(input[j])) {
+				j++
+			}
+			data = append(data, Token{
+				Type:  path,
+				value: string(input[i:j]),
+			})
+			i = j
+
 		default:
 
 			if unicode.IsLetter(curr) || unicode.IsDigit(curr) {
@@ -67,7 +106,7 @@ func parser(input string) (string, []Token) {
 				i = j
 			} else {
 
-				fmt.Fprint(os.Stderr, "invalid '%s' input ")
+				fmt.Fprintf(os.Stderr, "invalid '%c' input ", curr)
 				os.Exit(1)
 			}
 		}
