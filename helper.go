@@ -35,6 +35,14 @@ func extract_word(input string, i int, char rune) (string, int, error) {
 	return input[i:j], j, nil
 }
 
+func extractPath(input string, i int) (string, int) {
+	j := i + 1
+	for j < len(input) && !unicode.IsSpace(rune(input[j])) {
+		j++
+	}
+	return input[i:j], j
+}
+
 func parser(input string) (string, []Token) {
 	i := 0
 	data := make([]Token, 0)
@@ -61,6 +69,7 @@ loop:
 				value: value,
 			})
 			i = j
+			continue
 
 		case '\'':
 
@@ -76,22 +85,29 @@ loop:
 			})
 			i = j
 
+			continue
 		case '|':
 			data = append(data, Token{
 				Type:  pipe,
 				value: string(curr),
 			})
 		case '/':
-			j := i + 1
-			for j < len(input) && !unicode.IsSpace(rune(input[j])) {
-				j++
-			}
+			value, j := extractPath(input, i)
+			i = j
 			data = append(data, Token{
 				Type:  path,
-				value: string(input[i:j]),
+				value: value,
 			})
+			continue
+		case '~':
+			value, j := extractPath(input, i)
 			i = j
+			data = append(data, Token{
+				Type:  path,
+				value: value,
+			})
 
+			continue
 		default:
 
 			if unicode.IsLetter(curr) || unicode.IsDigit(curr) {
@@ -104,6 +120,7 @@ loop:
 					value: string(input[i:j]),
 				})
 				i = j
+				continue
 			} else {
 
 				fmt.Fprintf(os.Stderr, "invalid '%c' input ", curr)
@@ -131,9 +148,9 @@ func execute(command string, args []Token) {
 		cmd := exec.Command(command, tokenValue...)
 		output, err := cmd.CombinedOutput()
 		if err != nil {
-			fmt.Printf("%s ivalid command\n", command)
+			fmt.Printf("%s: command not found\n", command)
 		} else {
-			fmt.Println(string(output))
+			fmt.Print(string(output))
 		}
 	}
 }

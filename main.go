@@ -10,8 +10,16 @@ import (
 func main() {
 	Init()
 	reader := bufio.NewReader(os.Stdin)
+	fileinfo, err := os.Stdin.Stat()
+	if err != nil {
+		panic(err)
+	}
+	isInteractive := fileinfo.Mode()&os.ModeCharDevice != 0
 	for {
-		fmt.Print("$ ")
+		if isInteractive {
+			fmt.Print("$ ")
+			os.Stdout.Sync()
+		}
 		input, err := reader.ReadString('\n')
 		if err != nil {
 			fmt.Println("no data found ")
@@ -23,6 +31,8 @@ func main() {
 			continue
 		}
 		command, args := parser(input)
+		// fmt.Println(command)
+		// fmt.Println(args)
 		execute(command, args)
 
 	}

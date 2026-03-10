@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
 
@@ -70,19 +71,32 @@ func echoHandler(args []Token) {
 	fmt.Println(strings.Join(valueArray, " "))
 }
 
-// TODO: implement cd command
 func cdHandler(args []Token) {
-	path := args[0].value
-	if len(path) <= 0 {
+	if len(args) <= 0 {
 		return
 	}
+	path := args[0].value
 	switch path[0] {
+	// TODO: impletmt the realvative path
 	case '~':
+		homepath, err := os.UserHomeDir()
+		if err != nil {
+			return
+		}
+		restPath := ""
+		if len(path) > 1 {
+			restPath = path[1:]
+		}
+		fielpath := filepath.Join(homepath, restPath)
+		if err := os.Chdir(fielpath); err != nil {
+			fmt.Printf("cd: %s: No such file or directory\n", fielpath)
+		}
 	case '/':
 		if err := os.Chdir(path); err != nil {
-			fmt.Println(err.Error())
+			fmt.Printf("cd: %s: No such file or directory\n", path)
 		}
 	default:
+		return
 
 	}
 }
