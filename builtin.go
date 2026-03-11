@@ -77,8 +77,14 @@ func cdHandler(args []Token) {
 	}
 	path := args[0].value
 	switch path[0] {
-	// TODO: impletmt the realvative path
+	case '.':
+		path := filepath.Clean(path)
+		if err := os.Chdir(path); err != nil {
+			fmt.Printf("cd: %s: No such file or directory\n", path)
+		}
+
 	case '~':
+
 		homepath, err := os.UserHomeDir()
 		if err != nil {
 			return

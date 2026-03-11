@@ -81,7 +81,7 @@ loop:
 			}
 			data = append(data, Token{
 				Type:  quote,
-				value: value,
+				value: value[1 : len(value)-1],
 			})
 			i = j
 
@@ -100,6 +100,15 @@ loop:
 			})
 			continue
 		case '~':
+			value, j := extractPath(input, i)
+			i = j
+			data = append(data, Token{
+				Type:  path,
+				value: value,
+			})
+
+			continue
+		case '.':
 			value, j := extractPath(input, i)
 			i = j
 			data = append(data, Token{
